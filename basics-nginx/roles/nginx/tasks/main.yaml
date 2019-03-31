@@ -1,0 +1,49 @@
+---
+- name: Install prerequsities (epel repo)
+  become: yes
+  yum:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    state: present
+
+- name: Install the nginx package
+  become: yes
+  yum:
+   name: nginx
+   state: present
+  
+- name: Create web root directory
+  become: yes
+  file:
+    path: /var/www/html
+    state: directory
+    mode: 0755
+    recurse: yes
+ 
+- name: Copy custom index.html file 
+  become: yes
+  copy:
+    src: index.html
+    dest: /var/www/html/index.html
+    mode: 0644
+ 
+- name: Edit Configuration in Nginx 
+  become: yes
+  replace: 
+    path: /etc/nginx/nginx.conf
+    regexp: 'root         /usr/share/nginx/html;'
+    replace: 'root         /var/www/html/;'
+    backup: yes
+
+- name: ensure a nginx installed
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - nginx
+
+- name: start the nginx service
+  become: yes
+  systemd: 
+    name: nginx 
+    state: started 
+    enabled: yes
