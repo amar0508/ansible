@@ -3,5 +3,5 @@
   gather_facts: no
   become: yes
   roles: 
-    - nginx
-  tags: nginx,web 
+    - apache
+  tags: apache,web 

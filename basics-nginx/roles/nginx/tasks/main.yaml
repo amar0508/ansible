@@ -39,12 +39,47 @@
     replace: 'root         /var/www/html/;'
     backup: yes
 
-- name: ensure a nginx installed
-  yum:
-    name: "{{ packages }}"
-  vars:
-    packages:
-    - nginx
+- name: Ensure directory exists for local self-signed TLS certs.
+  file:
+    path: /etc/ssl/keys/localhost
+    state: directory
+
+- name: Generate self signed SSL certificates
+  command: >
+    openssl req
+      -new
+      -newkey rsa:4096
+      -days 365
+      -nodes
+      -x509
+      -subj "/C=US/ST=NY/L=NY/O=NA/CN=localhost"
+      -keyout /etc/ssl/keys/localhost/test.darkmeter.ae.key
+      -out /etc/ssl/keys/localhost/test.darkmeter.ae.crt
+  args:
+    creates: '/etc/ssl/keys/test.darkmeter.ae.pem'
+
+- name: Copy custom nginx.conf file 
+  become: yes
+  copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+    mode: 0644
+
+- name: update ssl certificate in Nginx 
+  become: yes
+  replace: 
+    path: /etc/nginx/nginx.conf
+    regexp: '{SSL_CERT}'
+    replace: '/etc/ssl/keys/localhost/test.darkmeter.ae.crt'
+    backup: yes
+
+- name: update ssl certificate key in Nginx 
+  become: yes
+  replace: 
+    path: /etc/nginx/nginx.conf
+    regexp: '{SSL_CERT_KEY}'
+    replace: '/etc/ssl/keys/localhost/test.darkmeter.ae.key'
+    backup: yes
 
 - name: start the nginx service
   become: yes
