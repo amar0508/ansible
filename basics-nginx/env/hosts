@@ -1,7 +1,7 @@
 [all:vars]
 ansible_user=ansible_user
-ansible_ssh_pass=ansible_user
-ansible_become_pass=ansible_user
+ansible_ssh_pass=ansible_user@123
+ansible_become_pass=ansible_user@123
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 [webservers]
